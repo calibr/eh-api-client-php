@@ -1,0 +1,11 @@
+{
+    "name": "calibr/eh-api-client",
+    "description": "eh api client",
+    "authors": [
+        {
+            "name": "calibr",
+            "email": "awcalibr@gmail.com"
+        }
+    ],
+    "require": {}
+}
