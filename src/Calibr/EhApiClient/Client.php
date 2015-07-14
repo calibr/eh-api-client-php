@@ -127,6 +127,7 @@ class Client {
     }
     $url = $this->_prepareUrl($url);
     $url = $this->_baseUrl . $url;
+    $options["http_errors"] = false;
     $res = $this->_callClient($method, $url, $options);
     $this->_checkResponseError($res);
     return $this->_parseResponse($res);
