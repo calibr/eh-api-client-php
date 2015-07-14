@@ -7,5 +7,13 @@
             "email": "awcalibr@gmail.com"
         }
     ],
-    "require": {}
+    "require": {
+        "phpunit/phpunit": "^4.7",
+        "guzzlehttp/guzzle": "^6.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "": "src/"
+        }
+    }
 }
