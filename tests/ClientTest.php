@@ -49,7 +49,8 @@ class ClientGetTest extends PHPUnit_Framework_TestCase
          ->with("http://base.com/testdata", [
            "headers" => [],
            "query" => [],
-           "body" => null
+           "body" => null,
+           "http_errors" => false
          ]);
     $client->get("/testdata");
   }
@@ -62,7 +63,8 @@ class ClientGetTest extends PHPUnit_Framework_TestCase
          ->with("http://base.com/testdata/1/2/3", [
            "headers" => [],
            "query" => [],
-           "body" => null
+           "body" => null,
+           "http_errors" => false
          ]);
     $client->get(["/testdata/??/??/??", 1, 2, 3]);
   }
@@ -85,7 +87,8 @@ class ClientGetTest extends PHPUnit_Framework_TestCase
              "filterValue_field4" => 500,
              "filterType_field4" => "lte"
            ],
-           "body" => null
+           "body" => null,
+           "http_errors" => false
          ]);
     $client->get("/testdata", [
       "filter" => [
@@ -107,7 +110,8 @@ class ClientGetTest extends PHPUnit_Framework_TestCase
              "Range" => "items=0-10"
            ],
            "query" => [],
-           "body" => null
+           "body" => null,
+           "http_errors" => false
          ]);
     $client->get("/testdata", [
       "range" => "items=0-10"
@@ -125,7 +129,8 @@ class ClientGetTest extends PHPUnit_Framework_TestCase
              "key2" => "val2"
            ],
            "body" => null,
-           "headers" => []
+           "headers" => [],
+           "http_errors" => false
          ]);
     $client->get("/testdata", [
       "query" => [
@@ -147,6 +152,7 @@ class ClientGetTest extends PHPUnit_Framework_TestCase
            "headers" => [
              "Authorization" => "Internal 1:web"
            ],
+           "http_errors" => false
          ]);
     $client->get("/testdata");
   }
@@ -180,6 +186,114 @@ class ClientGetTest extends PHPUnit_Framework_TestCase
     ]);
   }
 }
+
+class ClientHeadTest extends PHPUnit_Framework_TestCase
+{
+  private function _getMock() {
+    $mock = $this->getMockBuilder("\GuzzleHttp\Client")
+                 ->setMethods(array("head"))
+                 ->getMock();
+    return $mock;
+  }
+
+  private function _getMockSuccess() {
+    $res = new Response(200, [], json_encode([]));
+    $mock = $this->_getMock();
+    $mock->method("head")
+         ->willReturn($res);
+    return $mock;
+  }
+
+  private function _getMockError($code) {
+    $res = new Response($code, [], null);
+    $mock = $this->_getMock();
+    $mock->method("head")
+         ->willReturn($res);
+    return $mock;
+  }
+
+  public function testSimpleHead() {
+    $mock = $this->_getMockSuccess();
+    $client = getClient($mock);
+    $mock->expects($this->once())
+         ->method("head")
+         ->with("http://base.com/testdata", [
+           "headers" => [],
+           "query" => [],
+           "body" => null,
+           "http_errors" => false
+         ]);
+    $data = $client->head("/testdata");
+    $this->assertEquals($data, null);
+  }
+
+  public function testHeadWithError() {
+    $mock = $this->_getMockError(404);
+    $client = getClient($mock);
+    try {
+      $client->head("/testdata");
+      $this->fail("expected exception not thrown");
+    }
+    catch(\Calibr\EhApiClient\Exception $ex) {
+      $this->assertEquals($ex->getHttpCode(), 404);
+    }
+  }
+
+}
+
+class ClientExistsTest extends PHPUnit_Framework_TestCase
+{
+  private function _getMock() {
+    $mock = $this->getMockBuilder("\GuzzleHttp\Client")
+                 ->setMethods(array("head"))
+                 ->getMock();
+    return $mock;
+  }
+
+  private function _getMockSuccess() {
+    $res = new Response(200, [], json_encode([]));
+    $mock = $this->_getMock();
+    $mock->method("head")
+         ->willReturn($res);
+    return $mock;
+  }
+
+  private function _getMockError($code) {
+    $res = new Response($code, [], null);
+    $mock = $this->_getMock();
+    $mock->method("head")
+         ->willReturn($res);
+    return $mock;
+  }
+
+  public function testExistsFound() {
+    $mock = $this->_getMockSuccess();
+    $client = getClient($mock);
+    $data = $client->exists("/testdata");
+    $this->assertEquals($data, true);
+  }
+
+  public function testExistsNotFound() {
+    $mock = $this->_getMockError(404);
+    $client = getClient($mock);
+    $data = $client->exists("/testdata");
+    $this->assertEquals($data, false);
+  }
+
+  public function testExistsServerError() {
+    $mock = $this->_getMockError(500);
+    $client = getClient($mock);
+    try {
+      $client->head("/testdata");
+      $this->fail("expected exception not thrown");
+    }
+    catch(\Calibr\EhApiClient\Exception $ex) {
+      $this->assertEquals($ex->getHttpCode(), 500);
+    }
+  }
+}
+
+
 
 class ClientPostTest extends PHPUnit_Framework_TestCase
 {
@@ -219,7 +333,8 @@ class ClientPostTest extends PHPUnit_Framework_TestCase
            "query" => [],
            "json" => [
              "text" => "Hello world"
-           ]
+           ],
+           "http_errors" => false
          ]);
     $res = $client->post("/testdata", [
       "text" => "Hello world"
@@ -235,7 +350,8 @@ class ClientPostTest extends PHPUnit_Framework_TestCase
          ->with("http://base.com/testdata", [
            "headers" => [],
            "query" => [],
-           "body" => "Hello world"
+           "body" => "Hello world",
+           "http_errors" => false
          ]);
     $res = $client->post("/testdata", "Hello world");
     $this->assertEquals($res["result"], true);
@@ -250,6 +366,7 @@ class ClientPostTest extends PHPUnit_Framework_TestCase
            "headers" => [],
            "query" => ["hello" => "world"],
            "body" => "Hello world",
+           "http_errors" => false
          ]);
     $res = $client->post("/testdata", "Hello world", [
       "query" => ["hello" => "world"]

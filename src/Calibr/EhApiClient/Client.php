@@ -44,9 +44,12 @@ class Client {
           $message = $body["message"];
         }
         $ex = new Exception($name, $message);
-        $ex->setHttpCode($res->getStatusCode());
-        throw $ex;
       }
+      else {
+        $ex = new Exception("Error ".$res->getStatusCode());
+      }
+      $ex->setHttpCode($res->getStatusCode());
+      throw $ex;
     }
   }
 
@@ -127,13 +130,13 @@ class Client {
     }
     $url = $this->_prepareUrl($url);
     $url = $this->_baseUrl . $url;
-    $options["http_errors"] = false;
     $res = $this->_callClient($method, $url, $options);
     $this->_checkResponseError($res);
     return $this->_parseResponse($res);
   }
 
   private function _callClient($method, $url, $options) {
+    $options["http_errors"] = false;
     return call_user_func([$this->_client, $method], $url, $options);
   }
 
@@ -160,7 +163,32 @@ class Client {
    */
   public function head($url, $options = []) {
     $reqOptions = $this->_reqOptions($options);
-    return $this->_request("head", $url, null, $reqOptions);
+    $this->_request("head", $url, null, $reqOptions);
+    return null;
+  }
+
+  /**
+   * check resource is exists by HEAD request
+   * returns true if response code is 2XX returns true
+   * if response code is 404 returns false
+   * otherwise throws an exception
+   * @return bool
+   */
+  public function exists($url, $options = []) {
+    $reqOptions = $this->_reqOptions($options);
+    $res = true;
+    try {
+      $this->_request("head", $url, null, $reqOptions);
+    }
+    catch(Exception $ex) {
+      if($ex->getHttpCode() === 404) {
+        $res = false;
+      }
+      else {
+        throw $ex;
+      }
+    }
+    return $res;
   }
 
   /**
