@@ -72,38 +72,6 @@ class Client {
     return array_keys($arr) !== range(0, count($arr) - 1);
   }
 
-  private function _parseFilters($filters) {
-    $qs = [];
-    $filterFields = [];
-    foreach($filters as $filter) {
-      if(!is_array($filter)) {
-        continue;
-      }
-      if(!isset($filter["field"])) {
-        $key = $this->_arrayFirstKey($filter);
-        $filter["field"] = $key;
-        $value = $filter[$key];
-        $type = "eq";
-        if(is_array($value)) {
-          if($this->_arrayIsAssoc($value)) {
-            $type = $this->_arrayFirstKey($value);
-            $value = $value[$type];
-          }
-          else {
-            $type = "in";
-          }
-        }
-        $filter["value"] = $value;
-        $filter["type"] = $type;
-      }
-      $filterFields[] = $filter["field"];
-      $qs["filterValue_".$filter["field"]] = $filter["value"];
-      $qs["filterType_".$filter["field"]] = $filter["type"];
-    }
-    $qs["filterFields"] = $filterFields;
-    return $qs;
-  }
-
   private function _reqOptions($options = []) {
     $options = [
       "headers" => isset($options["headers"]) ? $options["headers"] : [],
@@ -149,10 +117,14 @@ class Client {
   public function get($url, $options = []) {
     $reqOptions = $this->_reqOptions($options);
     if(isset($options["filter"])) {
-      $reqOptions["query"] = array_merge($reqOptions["query"], $this->_parseFilters($options["filter"]));
+      $reqOptions["query"] = array_merge($reqOptions["query"], [
+        "filter" => json_encode($options["filter"])
+      ]);
     }
     if(isset($options["range"])) {
-      $reqOptions["headers"]["Range"] = $options["range"];
+      $reqOptions["query"] = array_merge($reqOptions["query"], [
+        "range" => json_encode($options["range"])
+      ]);
     }
     return $this->_request("get", $url, null, $reqOptions);
   }

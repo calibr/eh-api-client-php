@@ -70,6 +70,10 @@ class ClientGetTest extends PHPUnit_Framework_TestCase
   }
 
   public function testGetWithFilter() {
+    $filterObj = ["field" => "directField", "type" => "gt", "value" => 10,
+      "field2" => "just.string",
+      "field3" => ["val1", "val2", "val3"],
+      "field4" => ["lte" => 500]];
     $mock = $this->_getMockSuccess();
     $client = getClient($mock);
     $mock->expects($this->once())
@@ -77,44 +81,35 @@ class ClientGetTest extends PHPUnit_Framework_TestCase
          ->with("http://base.com/testdata", [
            "headers" => [],
            "query" => [
-             "filterFields" => ["directField", "field2", "field3", "field4"],
-             "filterValue_directField" => 10,
-             "filterType_directField" => "gt",
-             "filterValue_field2" => "just.string",
-             "filterType_field2" => "eq",
-             "filterValue_field3" => ["val1", "val2", "val3"],
-             "filterType_field3" => "in",
-             "filterValue_field4" => 500,
-             "filterType_field4" => "lte"
+             "filter" => json_encode($filterObj)
            ],
            "body" => null,
            "http_errors" => false
          ]);
     $client->get("/testdata", [
-      "filter" => [
-        ["field" => "directField", "type" => "gt", "value" => 10],
-        ["field2" => "just.string"],
-        ["field3" => ["val1", "val2", "val3"]],
-        ["field4" => ["lte" => 500]]
-      ]
+      "filter" => $filterObj
     ]);
   }
 
   public function testGetWithRange() {
+    $rangeObj = [
+      "offset" => 0,
+      "limit" => 10
+    ];
     $mock = $this->_getMockSuccess();
     $client = getClient($mock);
     $mock->expects($this->once())
          ->method("get")
          ->with("http://base.com/testdata", [
-           "headers" => [
-             "Range" => "items=0-10"
+           "headers" => [],
+           "query" => [
+             "range" => json_encode($rangeObj)
            ],
-           "query" => [],
            "body" => null,
            "http_errors" => false
          ]);
     $client->get("/testdata", [
-      "range" => "items=0-10"
+      "range" => $rangeObj
     ]);
   }
 
