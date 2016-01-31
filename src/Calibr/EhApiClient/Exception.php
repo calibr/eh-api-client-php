@@ -19,6 +19,12 @@ class Exception extends \Exception {
   }
 
   public function __construct($name = "Error", $message = "") {
+    if(!is_string($name)) {
+      $name = var_export($name, true);
+    }
+    if(!is_string($message)) {
+      $message = var_export($message, true);
+    }
     parent::__construct($name." (".$message.")");
     $this->_name = $name;
   }
