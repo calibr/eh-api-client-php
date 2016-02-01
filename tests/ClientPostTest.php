@@ -53,6 +53,29 @@ class ClientPostTest extends PHPUnit_Framework_TestCase
     $this->assertEquals($res["result"], true);
   }
 
+  public function testCustomOption() {
+    $mock = $this->_getMockSuccess();
+    $client = getClient($mock);
+    $mock->expects($this->once())
+         ->method("post")
+         ->with("http://base.com/testdata", [
+           "headers" => [],
+           "query" => [],
+           "json" => [
+             "text" => "Hello world"
+           ],
+           "multipart" => "custom value",
+           "http_errors" => false
+         ]);
+    $res = $client->post("/testdata", [
+      "text" => "Hello world"
+    ], [
+      "multipart" => "custom value"
+    ]);
+    $this->assertEquals($res["result"], true);
+  }
+
+
   public function testPostString() {
     $mock = $this->_getMockSuccess();
     $client = getClient($mock);

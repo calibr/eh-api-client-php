@@ -73,10 +73,12 @@ class Client {
   }
 
   private function _reqOptions($options = []) {
-    $options = [
-      "headers" => isset($options["headers"]) ? $options["headers"] : [],
-      "query" => isset($options["query"]) ? $options["query"] : []
-    ];
+    if(!isset($options["headers"])) {
+      $options["headers"] = [];
+    }
+    if(!isset($options["query"])) {
+      $options["query"] = [];
+    }
     if($this->_internalAuth) {
       $options["headers"]["Authorization"] = "Internal ".$this->_internalAuth;
     }
@@ -120,11 +122,13 @@ class Client {
       $reqOptions["query"] = array_merge($reqOptions["query"], [
         "filter" => json_encode($options["filter"])
       ]);
+      unset($reqOptions["filter"]);
     }
     if(isset($options["range"])) {
       $reqOptions["query"] = array_merge($reqOptions["query"], [
         "range" => json_encode($options["range"])
       ]);
+      unset($reqOptions["range"]);
     }
     return $this->_request("get", $url, null, $reqOptions);
   }
