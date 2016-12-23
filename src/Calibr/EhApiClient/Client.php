@@ -7,8 +7,16 @@ class Client {
   private $_baseUrl;
   private $_internalAuth;
 
+  private static $_guzzleClient = null;
+  private static function _getGuzzleClient() {
+    if(!self::$_guzzleClient) {
+      self::$_guzzleClient = new \GuzzleHttp\Client();
+    }
+    return self::$_guzzleClient;
+  }
+
   public function __construct($baseUrl) {
-    $this->_client = new \GuzzleHttp\Client();
+    $this->_client = self::_getGuzzleClient();
     $this->_baseUrl = $baseUrl;
   }
 
