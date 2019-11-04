@@ -6,6 +6,7 @@ class Client {
   private $_client;
   private $_baseUrl;
   private $_internalAuth;
+  private $_secret;
 
   private static $_guzzleClient = null;
   private static function _getGuzzleClient() {
@@ -26,6 +27,10 @@ class Client {
 
   public function setInternalAuth($userId, $app) {
     $this->_internalAuth = "$userId:$app";
+  }
+
+  public function setSecret($secret) {
+    $this->_secret = $secret;
   }
 
   private function _prepareUrl($url) {
@@ -89,6 +94,9 @@ class Client {
     }
     if($this->_internalAuth) {
       $options["headers"]["Authorization"] = "Internal ".$this->_internalAuth;
+    }
+    if($this->_secret) {
+      $options["headers"]["x-secret"] = $this->_secret;
     }
     return $options;
   }
