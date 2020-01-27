@@ -56,7 +56,7 @@ class Client {
         if(isset($body["message"])) {
           $message = $body["message"];
         }
-        $ex = new Exception($name, $message);
+        $ex = new Exception($name, $message, $body);
       }
       else {
         $ex = new Exception("Error ".$res->getStatusCode());
