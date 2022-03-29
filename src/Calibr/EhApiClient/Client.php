@@ -7,6 +7,8 @@ class Client {
   private $_baseUrl;
   private $_internalAuth;
   private $_secret;
+  private $maxNumberOfTries = 3;
+  private $currentTry = 0;
 
   private static $_guzzleClient = null;
   private static function _getGuzzleClient() {
@@ -116,9 +118,20 @@ class Client {
     }
     $url = $this->_prepareUrl($url);
     $url = $this->_baseUrl . $url;
-    $res = $this->_callClient($method, $url, $options);
-    $this->_checkResponseError($res);
-    return $this->_parseResponse($res);
+    while ($this->currentTry <= $this->maxNumberOfTries) {
+      $this->currentTry++;
+      try {
+        $res = $this->_callClient($method, $url, $options);
+        $this->_checkResponseError($res);
+        return $this->_parseResponse($res);
+      } catch (\GuzzleHttp\Exception\ConnectException $ex) {
+        if ($this->maxNumberOfTries == $this->currentTry) {
+          throw $ex;
+        }
+      } catch (Exception $ex) {
+        throw $ex;
+      }
+    }
   }
 
   private function _callClient($method, $url, $options) {
