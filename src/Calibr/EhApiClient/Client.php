@@ -7,8 +7,6 @@ class Client {
   private $_baseUrl;
   private $_internalAuth;
   private $_secret;
-  private $maxNumberOfTries = 3;
-  private $currentTry = 0;
 
   private static $_guzzleClient = null;
   private static function _getGuzzleClient() {
@@ -110,6 +108,8 @@ class Client {
    * @param  array  [$options] request options
    */
   private function _request($method, $url, $body = null, $options = []) {
+    $maxNumberOfTries = 3;
+    $currentTry = 0;
     if(is_array($body)) {
       $options["json"] = $body;
     }
@@ -118,14 +118,14 @@ class Client {
     }
     $url = $this->_prepareUrl($url);
     $url = $this->_baseUrl . $url;
-    while ($this->currentTry <= $this->maxNumberOfTries) {
-      $this->currentTry++;
+    while ($currentTry <= $maxNumberOfTries) {
+      $currentTry++;
       try {
         $res = $this->_callClient($method, $url, $options);
         $this->_checkResponseError($res);
         return $this->_parseResponse($res);
       } catch (\GuzzleHttp\Exception\ConnectException $ex) {
-        if ($this->maxNumberOfTries == $this->currentTry) {
+        if ($maxNumberOfTries == $currentTry) {
           throw $ex;
         }
       } catch (Exception $ex) {
