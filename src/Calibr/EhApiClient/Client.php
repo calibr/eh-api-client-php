@@ -108,6 +108,8 @@ class Client {
    * @param  array  [$options] request options
    */
   private function _request($method, $url, $body = null, $options = []) {
+    $maxNumberOfTries = 3;
+    $currentTry = 0;
     if(is_array($body)) {
       $options["json"] = $body;
     }
@@ -116,9 +118,20 @@ class Client {
     }
     $url = $this->_prepareUrl($url);
     $url = $this->_baseUrl . $url;
-    $res = $this->_callClient($method, $url, $options);
-    $this->_checkResponseError($res);
-    return $this->_parseResponse($res);
+    while ($currentTry <= $maxNumberOfTries) {
+      $currentTry++;
+      try {
+        $res = $this->_callClient($method, $url, $options);
+        $this->_checkResponseError($res);
+        return $this->_parseResponse($res);
+      } catch (\GuzzleHttp\Exception\ConnectException $ex) {
+        if ($maxNumberOfTries == $currentTry) {
+          throw $ex;
+        }
+      } catch (Exception $ex) {
+        throw $ex;
+      }
+    }
   }
 
   private function _callClient($method, $url, $options) {
